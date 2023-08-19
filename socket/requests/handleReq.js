@@ -1,5 +1,6 @@
 const Chats = require("../../models/chats");
 const User = require("../../models/user");
+const webpush = require("../../webpush");
 
 //FOR REQUEST RECIEVE
 const handleFriendReq = async (
@@ -68,7 +69,17 @@ const handleFriendReq = async (
 
     // call callback function recieved from sender
     addpend(Sender.pendingreq.find((req) => req.acceptor === acceptor));
-    console.log("emitted req");
+    //send a request to the acceptor for incoming friend request
+    Acceptor.notiEndpoints.forEach((end) => {
+      const point = JSON.parse(end.point);
+      webpush.sendNotification(
+        point,
+        JSON.stringify({
+          title: Acceptor.fullName,
+          message: `${Sender.username} sent you a friend request`,
+        })
+      );
+    });
   } catch (error) {
     console.log(error);
   }
@@ -129,14 +140,20 @@ const acceptedReq = async (
     const friend_acceptor = await Acceptor.friendsList.find(
       (friend) => friend.friendUsername === Sender.username
     );
-
-    // console.log(chat._id);
-    // console.log(friend_sender, "sender friend");
-    // console.log(friend_acceptor, "acceptor friend");
-
     // ADD FRIEND AND REMOVE REQUEST FROM BOTH SENDER AND ACCEPTOR
     removeReq(requestId, friend_acceptor);
     socket.to(Sender.username).emit("req_accepted", pendreq._id, friend_sender);
+    //Send a notification to sender of request accepted
+    Sender.notiEndpoints.forEach((end) => {
+      const point = JSON.parse(end.point);
+      webpush.sendNotification(
+        point,
+        JSON.stringify({
+          title: Sender.fullName,
+          message: `${Acceptor.username} accepted your friend request`,
+        })
+      );
+    });
   } catch (error) {
     console.log(error);
   }

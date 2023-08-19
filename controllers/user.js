@@ -75,6 +75,7 @@ const registerUser = async (req, res) => {
 // login route
 const loginUser = async (req, res) => {
   // await User.deleteMany({});
+  console.log("logging");
   const user = await User.findOne({ username: req.body.username });
   if (!user) {
     throw new UnAuthenticatedError(
@@ -86,6 +87,16 @@ const loginUser = async (req, res) => {
   if (!ispassCorrect) throw new UnAuthenticatedError("password incorrect");
   const payload = { username: user.username, id: user._id };
   const token = jwt.sign(payload, process.env.JWT_SECRET);
+  // CHECK IF USER ALLOWED NOTIFCATION
+  if (req.body.notiEndpoint) {
+    const endPoint = user.notiEndpoints.find(
+      (point) => point.point === req.body.notiEndpoint
+    );
+    if (!endPoint) {
+      await user.notiEndpoints.push({ point: req.body.notiEndpoint });
+      await user.save();
+    }
+  }
   const {
     _id,
     dob,
@@ -126,17 +137,17 @@ const checkUsername = async (req, res) => {
 const getUser = async (req, res) => {
   const { username, id, token } = req.user;
   const user = await User.findById(id);
-  const end = JSON.parse(user.notiEndpoints[0].point);
-  setTimeout(() => {
+  user.notiEndpoints.forEach((end) => {
+    const point = JSON.parse(end.point);
     webpush.sendNotification(
-      end,
+      point,
       JSON.stringify({
         title: "hello arslaan",
         message: "you have succefully logged in",
       })
     );
-    console.log("sent");
-  }, 10000);
+  });
+
   const {
     dob,
     friendsList,

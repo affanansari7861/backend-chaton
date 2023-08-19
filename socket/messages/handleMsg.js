@@ -1,10 +1,10 @@
 const Chats = require("../../models/chats");
 const user = require("../../models/user");
+const webpush = require("../../webpush");
 
 const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
   //GET CHATS OBJECT FIRST
   const chat = await Chats.findById(chatId);
-  console.log(msg);
   //GET RECIEVER
   const Reciever = await user.findOne({ username: reciever });
   //CREATE NEW CHAT OBJEXT TO BE INSERTED
@@ -24,6 +24,16 @@ const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
   socket.to(reciever).emit("msg_recieve", {
     recievedMsg: chat.chats[chat.chats.length - 1],
     chatId,
+  });
+  Reciever.notiEndpoints.forEach((end) => {
+    const point = JSON.parse(end.point);
+    webpush.sendNotification(
+      point,
+      JSON.stringify({
+        title: Reciever.fullName,
+        message: `${socket.user.username} sent you a message`,
+      })
+    );
   });
 };
 module.exports = handleMsg;
