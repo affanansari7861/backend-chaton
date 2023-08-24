@@ -3,7 +3,6 @@ const auth = async (socket, next) => {
   try {
     const authHeader = socket.handshake.auth.token;
     if (!authHeader || !authHeader.startsWith("Bearer")) {
-      console.log("token not provided");
       next(new Error("session expired please login again"));
     }
     const token = authHeader.split(" ")[1];
