@@ -26,14 +26,18 @@ const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
     chatId,
   });
   Reciever.notiEndpoints.forEach((end) => {
-    const point = JSON.parse(end.point);
-    webpush.sendNotification(
-      point,
-      JSON.stringify({
-        title: Reciever.fullName,
-        message: `${socket.user.username} sent you a message`,
-      })
-    );
+    try {
+      const point = JSON.parse(end.point);
+      webpush.sendNotification(
+        point,
+        JSON.stringify({
+          title: Reciever.fullName,
+          message: `${socket.user.username} sent you a message`,
+        })
+      );
+    } catch (error) {
+      Reciever.notiEndpoints.filter((point) => point !== end);
+    }
   });
 };
 module.exports = handleMsg;

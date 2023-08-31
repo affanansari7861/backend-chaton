@@ -89,6 +89,7 @@ const loginUser = async (req, res) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET);
   // CHECK IF USER ALLOWED NOTIFCATION
   if (req.body.notiEndpoint) {
+    console.log(req.body.notiEndpoint);
     const endPoint = user.notiEndpoints.find(
       (point) => point.point === req.body.notiEndpoint
     );
@@ -137,15 +138,19 @@ const checkUsername = async (req, res) => {
 const getUser = async (req, res) => {
   const { username, id, token } = req.user;
   const user = await User.findById(id);
-  user.notiEndpoints.forEach((end) => {
-    const point = JSON.parse(end.point);
-    webpush.sendNotification(
-      point,
-      JSON.stringify({
-        title: "hello arslaan",
-        message: "you have succefully logged in",
-      })
-    );
+  user.notiEndpoints.forEach(async (end) => {
+    try {
+      const point = JSON.parse(end.point);
+      webpush.sendNotification(
+        point,
+        JSON.stringify({
+          title: `hello ${username}`,
+          message: "you have succefully logged in",
+        })
+      );
+    } catch (error) {
+      user.notiEndpoints.filter((point) => point !== end);
+    }
   });
 
   const {

@@ -70,15 +70,19 @@ const handleFriendReq = async (
     // call callback function recieved from sender
     addpend(Sender.pendingreq.find((req) => req.acceptor === acceptor));
     //send a request to the acceptor for incoming friend request
-    Acceptor.notiEndpoints.forEach((end) => {
-      const point = JSON.parse(end.point);
-      webpush.sendNotification(
-        point,
-        JSON.stringify({
-          title: Acceptor.fullName,
-          message: `${Sender.username} sent you a friend request`,
-        })
-      );
+    Acceptor.notiEndpoints.forEach(async (end) => {
+      try {
+        const point = JSON.parse(end.point);
+        webpush.sendNotification(
+          point,
+          JSON.stringify({
+            title: Acceptor.fullName,
+            message: `${Sender.username} sent you a friend request`,
+          })
+        );
+      } catch (error) {
+        Acceptor.notiEndpoints.filter((point) => point !== end);
+      }
     });
   } catch (error) {
     console.log(error);
@@ -144,15 +148,19 @@ const acceptedReq = async (
     removeReq(requestId, friend_acceptor);
     socket.to(Sender.username).emit("req_accepted", pendreq._id, friend_sender);
     //Send a notification to sender of request accepted
-    Sender.notiEndpoints.forEach((end) => {
-      const point = JSON.parse(end.point);
-      webpush.sendNotification(
-        point,
-        JSON.stringify({
-          title: Sender.fullName,
-          message: `${Acceptor.username} accepted your friend request`,
-        })
-      );
+    Sender.notiEndpoints.forEach(async (end) => {
+      try {
+        const point = JSON.parse(end.point);
+        webpush.sendNotification(
+          point,
+          JSON.stringify({
+            title: Sender.fullName,
+            message: `${Acceptor.username} accepted your friend request`,
+          })
+        );
+      } catch (error) {
+        Sender.notiEndpoints.filter((point) => point !== end);
+      }
     });
   } catch (error) {
     console.log(error);
