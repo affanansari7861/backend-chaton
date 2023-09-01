@@ -1,0 +1,27 @@
+{
+  "short_name": "Chat on",
+  "name": "Chat on App PWA",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "1024x1024",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/images/logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "purpose": "any maskable",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#001322",
+  "background_color": "#001322"
+}
