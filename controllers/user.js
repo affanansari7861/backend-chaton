@@ -173,4 +173,4 @@ const getUser = async (req, res) => {
   });
 };
 
-module.exports = { registerUser, loginUser, checkUsername, getUser };
+module.exports = { registerUser, loginUser, getUser };
