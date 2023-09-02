@@ -126,14 +126,6 @@ const loginUser = async (req, res) => {
     token,
   });
 };
-const checkUsername = async (req, res) => {
-  console.log(req.body);
-  const user = await User.findOne(req.body);
-  if (user) {
-    throw BadRequestError("username not avaiable");
-  }
-  res.status(200).json({ available: true });
-};
 
 const getUser = async (req, res) => {
   const { username, id, token } = req.user;
@@ -149,7 +141,8 @@ const getUser = async (req, res) => {
         })
       );
     } catch (error) {
-      user.notiEndpoints.filter((point) => point !== end);
+      user.notiEndpoints = user.notiEndpoints.filter((point) => point !== end);
+      user.save();
     }
   });
 

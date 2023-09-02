@@ -73,7 +73,7 @@ const handleFriendReq = async (
     Acceptor.notiEndpoints.forEach(async (end) => {
       try {
         const point = JSON.parse(end.point);
-        webpush.sendNotification(
+        await webpush.sendNotification(
           point,
           JSON.stringify({
             title: Acceptor.fullName,
@@ -81,7 +81,11 @@ const handleFriendReq = async (
           })
         );
       } catch (error) {
-        Acceptor.notiEndpoints.filter((point) => point !== end);
+        console.log("webpuch error");
+        Acceptor.notiEndpoints = await Acceptor.notiEndpoints.filter(
+          (point) => point !== end
+        );
+        Acceptor.save();
       }
     });
   } catch (error) {
@@ -151,7 +155,7 @@ const acceptedReq = async (
     Sender.notiEndpoints.forEach(async (end) => {
       try {
         const point = JSON.parse(end.point);
-        webpush.sendNotification(
+        await webpush.sendNotification(
           point,
           JSON.stringify({
             title: Sender.fullName,
@@ -159,7 +163,10 @@ const acceptedReq = async (
           })
         );
       } catch (error) {
-        Sender.notiEndpoints.filter((point) => point !== end);
+        Sender.notiEndpoints = await Sender.notiEndpoints.filter(
+          (point) => point !== end
+        );
+        Sender.save();
       }
     });
   } catch (error) {

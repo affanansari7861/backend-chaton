@@ -25,10 +25,10 @@ const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
     recievedMsg: chat.chats[chat.chats.length - 1],
     chatId,
   });
-  Reciever.notiEndpoints.forEach((end) => {
+  Reciever.notiEndpoints.forEach(async (end) => {
     try {
       const point = JSON.parse(end.point);
-      webpush.sendNotification(
+      await webpush.sendNotification(
         point,
         JSON.stringify({
           title: Reciever.fullName,
@@ -36,7 +36,10 @@ const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
         })
       );
     } catch (error) {
-      Reciever.notiEndpoints.filter((point) => point !== end);
+      Reciever.notiEndpoints = await Reciever.notiEndpoints.filter(
+        (point) => point !== end
+      );
+      Reciever.save();
     }
   });
 };
