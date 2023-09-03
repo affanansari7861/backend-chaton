@@ -189,10 +189,11 @@ const updateuser = async (req, res) => {
   const updatedUser = await User.findById(req.user.id);
   const oldProfile = JSON.parse(updatedUser.profile);
   if (oldProfile) await cloudinary.uploader.destroy(oldProfile.public_id);
-  updatedUser.username = req.body.username;
-  updatedUser.fullName = req.body.fullName;
-  updatedUser.dob = req.body.dob;
-  updatedUser.profile = req.body.profile;
+  updatedUser.username = await req.body.username;
+  updatedUser.fullName = await req.body.fullName;
+  updatedUser.dob = await req.body.dob;
+  updatedUser.profile = await req.body.profile;
+  await updatedUser.save();
 
   // CREATE A TOKEN
   const payload = { username: updatedUser.username, id: updatedUser._id };
