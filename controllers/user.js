@@ -85,6 +85,7 @@ const loginUser = async (req, res) => {
 
   const ispassCorrect = await bcrypt.compare(req.body.password, user.password);
   if (!ispassCorrect) throw new UnAuthenticatedError("password incorrect");
+  // CREATE A TOKEN
   const payload = { username: user.username, id: user._id };
   const token = jwt.sign(payload, process.env.JWT_SECRET);
   // CHECK IF USER ALLOWED NOTIFCATION
@@ -172,5 +173,65 @@ const getUser = async (req, res) => {
     token,
   });
 };
+const updateuser = async (req, res) => {
+  const profile_img = req.body.profile;
+  // check if profile is changed
+  if (profile_img && !profile_img.startsWith('{"public_id"')) {
+    const res_img = await cloudinary.uploader.upload(profile_img, {
+      upload_preset: "chaton",
+    });
+    if (!res_img) throw BadRequestError("please upload a valid image");
+    const { public_id, secure_url } = res_img;
+    req.body.profile = JSON.stringify({ public_id, secure_url });
+  }
+  // update user
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {
+    returnDocument: "after",
+  });
+  // CREATE A TOKEN
+  const payload = { username: updatedUser.username, id: updatedUser._id };
+  const token = jwt.sign(payload, process.env.JWT_SECRET);
+  // create updated user obj for client
+  const {
+    _id,
+    dob,
+    username,
+    friendsList,
+    fullName,
+    email,
+    profile,
+    recentlySearched,
+    requestlist,
+    pendingreq,
+  } = updatedUser;
 
-module.exports = { registerUser, loginUser, getUser };
+  // update info in all friends friends list
+  updatedUser.friendsList.map(async (friend) => {
+    const Friend = await User.findOne({ username: friend.friendUsername });
+    const friendObj = await Friend.friendsList.find(
+      (user) => user.friendUsername === username
+    );
+    friendObj.friendName = fullName;
+    friendObj.friendUsername = username;
+    friendObj.profile = profile;
+    await Friend.save();
+  });
+  // send back updated user back to client
+  res.status(201).json({
+    user: {
+      _id,
+      dob,
+      username,
+      friendsList,
+      fullName,
+      email,
+      profile,
+      recentlySearched,
+      requestlist,
+      pendingreq,
+    },
+    token,
+  });
+};
+
+module.exports = { registerUser, loginUser, getUser, updateuser };
