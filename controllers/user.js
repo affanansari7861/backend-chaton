@@ -224,7 +224,10 @@ const updateuser = async (req, res) => {
       friendObj.profile = profile;
       await Friend.save();
     } catch (error) {
-      throw CustomApiError("something went wrong please try again later", 501);
+      throw new CustomApiError(
+        "something went wrong please try again later",
+        501
+      );
     }
   });
 
