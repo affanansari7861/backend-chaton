@@ -214,9 +214,10 @@ const updateuser = async (req, res) => {
     friendObj.friendName = fullName;
     friendObj.friendUsername = username;
     friendObj.profile = profile;
+    console.log(friendObj);
     await Friend.save();
   });
-  console.log("updated");
+
   // send back updated user back to client
   res.status(201).json({
     user: {
