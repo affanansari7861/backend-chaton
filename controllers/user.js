@@ -1,6 +1,7 @@
 const {
   BadRequestError,
   UnAuthenticatedError,
+  CustomApiError,
 } = require("../errors/custom-error");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
@@ -185,9 +186,14 @@ const updateuser = async (req, res) => {
     req.body.profile = JSON.stringify({ public_id, secure_url });
   }
   // update user
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {
-    returnDocument: "after",
-  });
+  const updatedUser = await User.findById(req.user.id);
+  const oldProfile = JSON.parse(updatedUser.profile);
+  if (oldProfile) await cloudinary.uploader.destroy(oldProfile.public_id);
+  updatedUser.username = req.body.username;
+  updatedUser.fullName = req.body.fullName;
+  updatedUser.dob = req.body.dob;
+  updatedUser.profile = req.body.profile;
+
   // CREATE A TOKEN
   const payload = { username: updatedUser.username, id: updatedUser._id };
   const token = jwt.sign(payload, process.env.JWT_SECRET);
@@ -207,15 +213,18 @@ const updateuser = async (req, res) => {
 
   // update info in all friends friends list
   updatedUser.friendsList.map(async (friend) => {
-    const Friend = await User.findOne({ username: friend.friendUsername });
-    const friendObj = await Friend.friendsList.find(
-      (user) => user.friendUsername === username
-    );
-    friendObj.friendName = fullName;
-    friendObj.friendUsername = username;
-    friendObj.profile = profile;
-    console.log(friendObj);
-    await Friend.save();
+    try {
+      const Friend = await User.findOne({ username: friend.friendUsername });
+      const friendObj = await Friend.friendsList.find(
+        (user) => user.friendUsername === username
+      );
+      friendObj.friendName = fullName;
+      friendObj.friendUsername = username;
+      friendObj.profile = profile;
+      await Friend.save();
+    } catch (error) {
+      throw CustomApiError("something went wrong please try again later", 501);
+    }
   });
 
   // send back updated user back to client
