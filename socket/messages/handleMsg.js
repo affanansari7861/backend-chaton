@@ -25,7 +25,7 @@ const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
     recievedMsg: chat.chats[chat.chats.length - 1],
     chatId,
   });
-  Reciever.notiEndpoints.forEach(async (end) => {
+  Reciever.notiEndpoints.map(async (end) => {
     try {
       const point = JSON.parse(end.point);
       await webpush.sendNotification(
@@ -36,10 +36,8 @@ const handleMsg = async (socket, { msg, reciever, chatId }, addSentMsg) => {
         })
       );
     } catch (error) {
-      Reciever.notiEndpoints = await Reciever.notiEndpoints.filter(
-        (point) => point !== end
-      );
-      Reciever.save();
+      await Reciever.notiEndpoints.id(end._id).deleteOne();
+      await Reciever.save();
     }
   });
 };

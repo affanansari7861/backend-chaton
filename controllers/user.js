@@ -91,7 +91,6 @@ const loginUser = async (req, res) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET);
   // CHECK IF USER ALLOWED NOTIFCATION
   if (req.body.notiEndpoint) {
-    console.log(req.body.notiEndpoint);
     const endPoint = user.notiEndpoints.find(
       (point) => point.point === req.body.notiEndpoint
     );
@@ -132,10 +131,10 @@ const loginUser = async (req, res) => {
 const getUser = async (req, res) => {
   const { username, id, token } = req.user;
   const user = await User.findById(id);
-  user.notiEndpoints.forEach(async (end) => {
+  user.notiEndpoints.map(async (end) => {
     try {
       const point = JSON.parse(end.point);
-      webpush.sendNotification(
+      await webpush.sendNotification(
         point,
         JSON.stringify({
           title: `hello ${username}`,
@@ -143,8 +142,9 @@ const getUser = async (req, res) => {
         })
       );
     } catch (error) {
-      user.notiEndpoints = user.notiEndpoints.filter((point) => point !== end);
-      user.save();
+      console.log("error while sending notifications");
+      await user.notiEndpoints.id(end._id).deleteOne();
+      await user.save();
     }
   });
 
@@ -213,7 +213,7 @@ const updateuser = async (req, res) => {
   } = updatedUser;
 
   // update info in all friends friends list
-  updatedUser.friendsList.map(async (friend) => {
+  await updatedUser.friendsList.map(async (friend) => {
     try {
       const Friend = await User.findOne({ username: friend.friendUsername });
       const friendObj = await Friend.friendsList.find(
@@ -224,10 +224,7 @@ const updateuser = async (req, res) => {
       friendObj.profile = profile;
       await Friend.save();
     } catch (error) {
-      throw new CustomApiError(
-        "something went wrong please try again later",
-        501
-      );
+      res.status(500).json({ message: err.message });
     }
   });
 

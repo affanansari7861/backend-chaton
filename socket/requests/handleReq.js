@@ -70,7 +70,7 @@ const handleFriendReq = async (
     // call callback function recieved from sender
     addpend(Sender.pendingreq.find((req) => req.acceptor === acceptor));
     //send a request to the acceptor for incoming friend request
-    Acceptor.notiEndpoints.forEach(async (end) => {
+    Acceptor.notiEndpoints.map(async (end) => {
       try {
         const point = JSON.parse(end.point);
         await webpush.sendNotification(
@@ -81,11 +81,8 @@ const handleFriendReq = async (
           })
         );
       } catch (error) {
-        console.log("webpuch error");
-        Acceptor.notiEndpoints = await Acceptor.notiEndpoints.filter(
-          (point) => point !== end
-        );
-        Acceptor.save();
+        await Acceptor.notiEndpoints.id(end._id).deleteOne();
+        await Acceptor.save();
       }
     });
   } catch (error) {
@@ -163,10 +160,8 @@ const acceptedReq = async (
           })
         );
       } catch (error) {
-        Sender.notiEndpoints = await Sender.notiEndpoints.filter(
-          (point) => point !== end
-        );
-        Sender.save();
+        await Sender.notiEndpoints.id(end._id).deleteOne();
+        await Sender.save();
       }
     });
   } catch (error) {
