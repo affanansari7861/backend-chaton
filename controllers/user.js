@@ -8,6 +8,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const webpush = require("../webpush");
 const cloudinary = require("../cloudinary");
+const user = require("../models/user");
 
 // regiter route
 const registerUser = async (req, res) => {
@@ -24,7 +25,6 @@ const registerUser = async (req, res) => {
   // HASH PAASWORD
   const salt = await bcrypt.genSalt(10);
   const password = await bcrypt.hash(req.body.password, salt);
-  // console.log(req.body);
   const user = await User.create({
     ...req.body,
     requestlist: [],
@@ -78,6 +78,7 @@ const loginUser = async (req, res) => {
   // await User.deleteMany({});
   console.log("logging");
   const user = await User.findOne({ username: req.body.username });
+  // CHECK FOR ANY MONGOSSE ERROR
   if (!user) {
     throw new UnAuthenticatedError(
       "no user with username:" + req.body.username
@@ -111,6 +112,7 @@ const loginUser = async (req, res) => {
     requestlist,
     pendingreq,
   } = user;
+  // SEND BACK USER OBJECT
   res.status(201).json({
     user: {
       _id,
@@ -199,6 +201,7 @@ const updateuser = async (req, res) => {
   const payload = { username: updatedUser.username, id: updatedUser._id };
   const token = jwt.sign(payload, process.env.JWT_SECRET);
   // create updated user obj for client
+
   const {
     _id,
     dob,
@@ -213,21 +216,16 @@ const updateuser = async (req, res) => {
   } = updatedUser;
 
   // update info in all friends friends list
-  await updatedUser.friendsList.map(async (friend) => {
-    try {
-      const Friend = await User.findOne({ username: friend.friendUsername });
-      const friendObj = await Friend.friendsList.find(
-        (user) => user.friendUsername === username
-      );
-      friendObj.friendName = fullName;
-      friendObj.friendUsername = username;
-      friendObj.profile = profile;
-      await Friend.save();
-    } catch (error) {
-      res.status(500).json({ message: err.message });
-    }
+  updatedUser.friendsList.map(async (friend) => {
+    const Friend = await User.findOne({ username: friend.friendUsername });
+    const friendObj = await Friend.friendsList.find(
+      (user) => user.chatID === friend.chatID
+    );
+    friendObj.friendName = fullName;
+    friendObj.friendUsername = username;
+    friendObj.profile = profile;
+    await Friend.save();
   });
-
   // send back updated user back to client
   res.status(201).json({
     user: {
