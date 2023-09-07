@@ -62,6 +62,13 @@ const userSchema = new mongoose.Schema({
       status: String,
     },
   ],
+  activeList: [
+    {
+      profile: String,
+      fullName: String,
+      username: String,
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", userSchema);

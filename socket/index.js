@@ -1,3 +1,4 @@
+const { cameOnline, goneOffline } = require("./actvity/online");
 const authenticate = require("./auth");
 const handleMsg = require("./messages/handleMsg");
 const { handleFriendReq, acceptedReq } = require("./requests/handleReq");
@@ -12,18 +13,20 @@ const connectSocket = (server) => {
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     const user_room = socket.user.username;
-    console.log("room", user_room);
-    if (user_room) socket.join(user_room);
+    if (user_room) await socket.join(user_room);
+    cameOnline(socket);
     socket.emit("join_room", user_room);
     socket.on("send_request", (payload, addpend) => {
       handleFriendReq(socket, payload, addpend);
     });
     socket.on("accept_request", (payload, removeReq) => {
-      // "accept_request", payload;
       console.log("request accepted");
       acceptedReq(socket, payload, removeReq);
+    });
+    socket.on("disconnect", (reason) => {
+      goneOffline(socket);
     });
     socket.on("send_msg", (payload, addSentMsg) => {
       handleMsg(socket, payload, addSentMsg);

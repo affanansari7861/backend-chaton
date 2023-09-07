@@ -61,7 +61,7 @@ const handleFriendReq = async (
       await Sender.save();
     }
 
-    // emit request to acceptor in real time opo
+    // emit request to acceptor in real time
     socket.to(Acceptor.username).emit(
       "req_recieve",
       Acceptor.requestlist.find((req) => req.sender === sender)

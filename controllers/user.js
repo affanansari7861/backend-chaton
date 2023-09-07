@@ -30,6 +30,7 @@ const registerUser = async (req, res) => {
     requestlist: [],
     password,
     notiEndpoints: [],
+    activeList: [],
   });
 
   if (!user) throw new BadRequestError("please provide all credentials");
@@ -53,6 +54,7 @@ const registerUser = async (req, res) => {
     recentlySearched,
     requestlist,
     pendingreq,
+    activeList,
   } = user;
   // CREATE TOKEN
   const token = await jwt.sign(payload, process.env.JWT_SECRET);
@@ -69,6 +71,7 @@ const registerUser = async (req, res) => {
       recentlySearched,
       requestlist,
       pendingreq,
+      activeList,
     },
     token,
   });
@@ -110,6 +113,7 @@ const loginUser = async (req, res) => {
     profile,
     recentlySearched,
     requestlist,
+    activeList,
     pendingreq,
   } = user;
   // SEND BACK USER OBJECT
@@ -125,6 +129,7 @@ const loginUser = async (req, res) => {
       recentlySearched,
       requestlist,
       pendingreq,
+      activeList,
     },
     token,
   });
@@ -145,6 +150,7 @@ const getUser = async (req, res) => {
       );
     } catch (error) {
       console.log("error while sending notifications");
+      console.log(end);
       await user.notiEndpoints.id(end._id).deleteOne();
       await user.save();
     }
@@ -159,6 +165,7 @@ const getUser = async (req, res) => {
     recentlySearched,
     requestlist,
     pendingreq,
+    activeList,
   } = user;
   res.status(200).json({
     user: {
@@ -172,6 +179,7 @@ const getUser = async (req, res) => {
       recentlySearched,
       requestlist,
       pendingreq,
+      activeList,
     },
     token,
   });
@@ -213,6 +221,7 @@ const updateuser = async (req, res) => {
     recentlySearched,
     requestlist,
     pendingreq,
+    activeList,
   } = updatedUser;
 
   // update info in all friends friends list
@@ -238,6 +247,7 @@ const updateuser = async (req, res) => {
       profile,
       recentlySearched,
       requestlist,
+      activeList,
       pendingreq,
     },
     token,
