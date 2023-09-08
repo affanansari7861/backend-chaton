@@ -9,11 +9,11 @@ const cameOnline = async (socket) => {
       (activeUser) => activeUser.username === user.username
     );
     if (alreadyActive) return;
-    const { username, profile } = user;
+    // console.log(friend.chatID);
     const { _id } = await Friend.friendsList.find(
       (fr) => fr.chatID === friend.chatID
     );
-    console.log(username, _id);
+    const { username, profile } = user;
     await Friend.activeList.push({ username, profile, id: _id });
     await Friend.save();
   });

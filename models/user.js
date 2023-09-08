@@ -65,8 +65,8 @@ const userSchema = new mongoose.Schema({
   activeList: [
     {
       profile: String,
-      fullName: String,
       username: String,
+      id: String,
     },
   ],
 });
