@@ -14,6 +14,9 @@ const cameOnline = async (socket) => {
       (fr) => fr.chatID === friend.chatID
     );
     const { username, profile } = user;
+    socket
+      .to(friend.friendUsername)
+      .emit("friend_active", { username, profile, id: _id });
     await Friend.activeList.push({ username, profile, id: _id });
     await Friend.save();
   });
@@ -22,7 +25,9 @@ const cameOnline = async (socket) => {
 const goneOffline = async (socket) => {
   console.log(socket.user.username, " has gone offline");
   const user = await User.findById(socket.user.id);
+
   user.friendsList.map(async (friend) => {
+    socket.to(friend.friendUsername).emit("friend_disconnected", user.username);
     const Friend = await User.findOne({ username: friend.friendUsername });
     Friend.activeList = await Friend.activeList.filter(
       (activeUser) => activeUser.username !== user.username
