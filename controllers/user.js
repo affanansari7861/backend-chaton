@@ -149,8 +149,6 @@ const getUser = async (req, res) => {
         })
       );
     } catch (error) {
-      console.log("error while sending notifications");
-      console.log(end);
       await user.notiEndpoints.id(end._id).deleteOne();
       await user.save();
     }
