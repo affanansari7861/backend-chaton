@@ -4,14 +4,17 @@ const cameOnline = async (socket) => {
   console.log(socket.user.username, "came online ");
   const user = await User.findById(socket.user.id);
   user.friendsList.map(async (friend) => {
-    console.log(friend._id);
     const Friend = await User.findOne({ username: friend.friendUsername });
     const alreadyActive = await Friend.activeList.find(
       (activeUser) => activeUser.username === user.username
     );
     if (alreadyActive) return;
-    const { username, profile, fullName } = user;
-    await Friend.activeList.push({ username, profile, id: friend._id });
+    const { username, profile } = user;
+    const { _id } = await Friend.friendsList.find(
+      (fr) => fr.chatID === friend.chatID
+    );
+    console.log(username, _id);
+    await Friend.activeList.push({ username, profile, id: _id });
     await Friend.save();
   });
 };
