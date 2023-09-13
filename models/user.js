@@ -37,6 +37,29 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
       },
+      lastmsg: {
+        msg: {
+          type: String,
+          default: "",
+        },
+        time: Number,
+        seen: {
+          type: Boolean,
+          default: false,
+        },
+        sender: String,
+      },
+      activity: {
+        active: {
+          type: Boolean,
+          default: false,
+        },
+        typing: {
+          type: Boolean,
+          default: false,
+        },
+        time: Number,
+      },
     },
   ],
   requestlist: [
@@ -62,13 +85,6 @@ const userSchema = new mongoose.Schema({
       status: String,
     },
   ],
-  activeList: [
-    {
-      profile: String,
-      username: String,
-      id: String,
-    },
-  ],
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("newUser", userSchema);

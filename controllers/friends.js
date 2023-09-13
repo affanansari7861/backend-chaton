@@ -1,6 +1,7 @@
 const { NotFoundError } = require("../errors/custom-error");
 const User = require("../models/user");
 const Chats = require("../models/chats");
+const chats = require("../models/chats");
 const getChats = async (req, res) => {
   const chatID = req.params.chatId;
   const chat = await Chats.findById(chatID);

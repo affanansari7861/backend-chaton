@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const webpush = require("../webpush");
 const cloudinary = require("../cloudinary");
 const user = require("../models/user");
+const Chats = require("../models/chats");
 
 // regiter route
 const registerUser = async (req, res) => {
@@ -136,8 +137,18 @@ const loginUser = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
+  const users = await User.find({});
+  // users.map(async (client) => {
+  //   await delete client.activeList;
+  //   await delete client.friendsList.lastActivity;
+  //   await client.save();
+  //   console.log("deleted");
+  // });
   const { username, id, token } = req.user;
   const user = await User.findById(id);
+  if (!user) {
+    throw new UnAuthenticatedError("session expired please login again");
+  }
   user.notiEndpoints.map(async (end) => {
     try {
       const point = JSON.parse(end.point);

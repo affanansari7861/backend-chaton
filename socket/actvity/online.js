@@ -1,39 +1,52 @@
 const User = require("../../models/user");
+const { typing } = require("./typing");
 
 const cameOnline = async (socket) => {
-  console.log(socket.user.username, "came online ");
-  const user = await User.findById(socket.user.id);
-  user.friendsList.map(async (friend) => {
-    const Friend = await User.findOne({ username: friend.friendUsername });
-    const alreadyActive = await Friend.activeList.find(
-      (activeUser) => activeUser.username === user.username
-    );
-    if (alreadyActive) return;
-    // console.log(friend.chatID);
-    const { _id } = await Friend.friendsList.find(
-      (fr) => fr.chatID === friend.chatID
-    );
-    const { username, profile } = user;
-    socket
-      .to(friend.friendUsername)
-      .emit("friend_active", { username, profile, id: _id });
-    await Friend.activeList.push({ username, profile, id: _id });
-    await Friend.save();
-  });
+  try {
+    console.log(socket.user.username, "came online ");
+    const user = await User.findById(socket.user.id);
+    if (!user) return;
+    user.friendsList.map(async (friend) => {
+      socket.to(friend.friendUsername).emit("friend_active", friend.chatID);
+      const Friend = await User.findOne({ username: friend.friendUsername });
+      Friend.friendsList.find((fr) => fr.chatID === friend.chatID).activity =
+        await {
+          active: true,
+          time: Date.now(),
+        };
+      await Friend.save();
+    });
+  } catch (error) {
+    console.log("error trigered online");
+    // cameOnline(socket);
+    console.log(error);
+  }
 };
 
 const goneOffline = async (socket) => {
-  console.log(socket.user.username, " has gone offline");
-  const user = await User.findById(socket.user.id);
+  try {
+    console.log(socket.user.username, " has gone offline");
 
-  user.friendsList.map(async (friend) => {
-    socket.to(friend.friendUsername).emit("friend_disconnected", user.username);
-    const Friend = await User.findOne({ username: friend.friendUsername });
-    Friend.activeList = await Friend.activeList.filter(
-      (activeUser) => activeUser.username !== user.username
-    );
-    await Friend.save();
-  });
+    const user = await User.findById(socket.user.id);
+    if (!user) return;
+    user.friendsList.map(async (friend) => {
+      socket
+        .to(friend.friendUsername)
+        .emit("friend_disconnected", friend.chatID);
+      const Friend = await User.findOne({ username: friend.friendUsername });
+      Friend.friendsList.find((fr) => fr.chatID === friend.chatID).activity =
+        await {
+          active: false,
+          typing: false,
+          time: Date.now(),
+        };
+      await Friend.save();
+    });
+  } catch (error) {
+    console.log("error trigered offline");
+    // goneOffline(socket);
+    console.log(error);
+  }
 };
 
 module.exports = { cameOnline, goneOffline };

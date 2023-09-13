@@ -1,4 +1,5 @@
 const { cameOnline, goneOffline } = require("./actvity/online");
+const { typing, stopedTyping } = require("./actvity/typing");
 const authenticate = require("./auth");
 const handleMsg = require("./messages/handleMsg");
 const { handleFriendReq, acceptedReq } = require("./requests/handleReq");
@@ -25,11 +26,14 @@ const connectSocket = (server) => {
       console.log("request accepted");
       acceptedReq(socket, payload, removeReq);
     });
-    socket.on("disconnect", (reason) => {
+    socket.on("disconnect", async (reason) => {
       goneOffline(socket);
     });
     socket.on("send_msg", (payload, addSentMsg) => {
       handleMsg(socket, payload, addSentMsg);
+    });
+    socket.on("typing", (chatID, fr_username, value) => {
+      typing(socket, chatID, fr_username, value);
     });
   });
 
