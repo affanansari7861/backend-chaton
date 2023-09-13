@@ -202,7 +202,7 @@ const updateuser = async (req, res) => {
     });
     if (!res_img) throw BadRequestError("please upload a valid image");
     const { public_id, secure_url } = res_img;
-    req.body.profile = JSON.stringify({ public_id, secure_url });
+    req.body.profile = await JSON.stringify({ public_id, secure_url });
   }
   // update user
   const updatedUser = await User.findById(req.user.id);
