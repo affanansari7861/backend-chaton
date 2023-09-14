@@ -206,8 +206,11 @@ const updateuser = async (req, res) => {
   }
   // update user
   const updatedUser = await User.findById(req.user.id);
-  const oldProfile = JSON.parse(updatedUser.profile);
-  if (oldProfile) await cloudinary.uploader.destroy(oldProfile.public_id);
+  if (updatedUser.profile) {
+    const oldProfile = JSON.parse(updatedUser.profile);
+    if (oldProfile) await cloudinary.uploader.destroy(oldProfile.public_id);
+  }
+
   updatedUser.username = await req.body.username;
   updatedUser.fullName = await req.body.fullName;
   updatedUser.dob = await req.body.dob;
