@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
       activity: {
         active: {
           type: Boolean,
-          default: false,
+          default: true,
         },
         typing: {
           type: Boolean,
