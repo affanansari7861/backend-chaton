@@ -8,7 +8,7 @@ const seenMsg = async (socket, index, chatID, friendUsename, callback) => {
       seen: true,
       time: Date.now(),
     };
-    await chat.save;
+    await chat.save();
     socket.to(friendUsename).emit("msg_seen", { index, chatID });
 
     callback({ index, chatID });
