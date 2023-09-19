@@ -2,6 +2,7 @@ const { cameOnline, goneOffline } = require("./actvity/online");
 const { typing, stopedTyping } = require("./actvity/typing");
 const authenticate = require("./auth");
 const handleMsg = require("./messages/handleMsg");
+const { seenMsg } = require("./messages/seenMsg");
 const { handleFriendReq, acceptedReq } = require("./requests/handleReq");
 const connectSocket = (server) => {
   const io = require("socket.io")(server, {
@@ -35,6 +36,9 @@ const connectSocket = (server) => {
     socket.on("typing", (chatID, fr_username, value) => {
       typing(socket, chatID, fr_username, value);
     });
+    socket.on("seen_msg", (index, chatID, friendUsename, callback) =>
+      seenMsg(socket, index, chatID, friendUsename, callback)
+    );
   });
 
   // authenticate
