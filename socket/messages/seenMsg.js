@@ -1,9 +1,7 @@
 const Chats = require("../../models/chats");
 const seenMsg = async (socket, index, chatID, friendUsename, callback) => {
   try {
-    console.log(index);
     const chat = await Chats.findById(chatID);
-    console.log(friendUsename);
     chat.chats[index].seen = await {
       seen: true,
       time: Date.now(),

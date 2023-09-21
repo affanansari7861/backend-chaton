@@ -112,7 +112,7 @@ const acceptedReq = async (
     // CREATE A CHAT OBJECT
     const chat = await Chats.create({ chats: [] });
 
-    // // SAVE FRIEND IN SENDER FRIENDLIST DB
+    // ! SAVE FRIEND IN SENDER FRIENDLIST DB
     await Sender.friendsList.push({
       chatID: chat._id,
       friendName: Acceptor.fullName,
@@ -120,7 +120,7 @@ const acceptedReq = async (
       profile: Acceptor.profile,
     });
 
-    // SAVE FRIEND IN ACCEPTOR FRIENDLIST DB
+    //! SAVE FRIEND IN ACCEPTOR FRIENDLIST DB
     await Acceptor.friendsList.push({
       chatID: chat._id,
       friendName: Sender.fullName,
@@ -128,27 +128,29 @@ const acceptedReq = async (
       profile: Sender.profile,
     });
 
-    // DELETE REQUEST DB
+    // !DELETE REQUEST DB
     const request = await Acceptor.requestlist.id(requestId);
     request.deleteOne();
-    //Delete pending req from sender db
-    await Sender.pendingreq.id(pendreq._id).deleteOne();
+    //!Delete pending req from sender db
+    // await Sender.pendingreq.id(pendreq._id).deleteOne();
 
-    //SAVE ACCEPTOR AND SENDER
+    //!SAVE ACCEPTOR AND SENDER
     await Acceptor.save();
     await Sender.save();
 
-    // CREATE FRIEND OBJECTS FOR BOTH SEDNER ACCEPTOR
+    // !CREATE FRIEND OBJECTS FOR BOTH SEDNER ACCEPTOR
     const friend_sender = await Sender.friendsList.find(
       (friend) => friend.friendUsername === Acceptor.username
     );
     const friend_acceptor = await Acceptor.friendsList.find(
       (friend) => friend.friendUsername === Sender.username
     );
-    // ADD FRIEND AND REMOVE REQUEST FROM BOTH SENDER AND ACCEPTOR
-    removeReq(requestId, friend_acceptor);
-    socket.to(Sender.username).emit("req_accepted", pendreq._id, friend_sender);
-    //Send a notification to sender of request accepted
+    // !ADD FRIEND AND REMOVE REQUEST FROM BOTH SENDER AND ACCEPTOR
+    removeReq(requestId, friend_acceptor, chat._id);
+    socket
+      .to(Sender.username)
+      .emit("req_accepted", pendreq._id, friend_sender, chat._id);
+    //*Send a notification to sender of request accepted
     Sender.notiEndpoints.forEach(async (end) => {
       try {
         const point = JSON.parse(end.point);
